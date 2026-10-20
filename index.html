@@ -18,6 +18,21 @@ body{min-height:100vh;
   background-size:48px 48px;background-position:-1px -1px;background-attachment:fixed}
 body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,transparent 0%,var(--bg) 75%);pointer-events:none;z-index:0}
 .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 16px 60px}
+.hdr-r{display:flex;align-items:flex-end;gap:16px}
+.help-btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 6px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;font-family:inherit;font-size:13px}
+.help-btn span{display:grid;place-items:center;width:20px;height:20px;background:var(--accent);color:var(--accent-ink);font:800 13px Consolas,monospace}
+.help-btn:hover{border-color:var(--accent)}
+.sheet.help-sheet{width:min(860px,100%);height:auto;max-height:100%}
+#mInfo2{flex:1}
+.h-sub{flex:1;font:600 10px Consolas,monospace;letter-spacing:.3em;color:var(--accent)}
+.help-body{overflow-y:auto;min-height:0;flex:1 1 auto;padding:6px 20px 14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:4px 28px;align-content:start}
+.help-body section{min-width:0}
+.help-body h3{display:flex;align-items:center;gap:8px;margin:14px 0 6px;font-size:15px}
+.help-body h3 i{font:700 11px Consolas,monospace;font-style:normal;width:20px;height:20px;display:grid;place-items:center;border:1px solid var(--accent);color:var(--accent)}
+.help-body ul{margin:0;padding-left:18px;color:#c9cacd;font-size:13px;line-height:1.75}
+.help-body b{color:var(--text)}
+.help-body .c-must{color:var(--must)}.help-body .c-ban{color:var(--ban)}
+.help-body kbd{font:12px Consolas,monospace;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;background:var(--panel);color:var(--text)}
 header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
   border-bottom:2px solid var(--text);padding-bottom:12px}
 h1{margin:0;font-size:30px;letter-spacing:.08em;font-weight:800}
@@ -173,8 +188,64 @@ footer a{color:var(--dim)}
 <div class="wrap">
   <header>
     <h1><small>ARKNIGHTS · RANDOM OPERATOR</small>干员抽选</h1>
-    <div class="pool">当前卡池<br><b id="poolN">0</b> / <span id="allN">0</span></div>
+    <div class="hdr-r">
+      <button class="help-btn" id="helpBtn" aria-haspopup="dialog"><span aria-hidden="true">?</span>使用说明</button>
+      <div class="pool">当前卡池<br><b id="poolN">0</b> / <span id="allN">0</span></div>
+    </div>
   </header>
+  <div class="modal" id="help" hidden>
+    <div class="sheet help-sheet" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="m-head">
+        <h2 id="helpTitle">使用说明</h2>
+        <span class="h-sub">OPERATOR PICKER · GUIDE</span>
+        <button class="m-close" id="helpClose" aria-label="关闭">×</button>
+      </div>
+      <div class="help-body">
+        <section>
+          <h3><i>1</i>抽取</h3>
+          <ul>
+            <li>用 <b>−</b> / <b>＋</b> 或快捷按钮 <b>1 · 4 · 6 · 10 · 12</b> 设置数量，默认 10 人。</li>
+            <li>点右侧黄色 <b>抽取</b> 按钮，抽完后按钮变为 <b>重抽</b>，整组重新抽取。</li>
+            <li>默认同一次不会抽到重复干员；勾选 <b>允许重复</b> 后可以重复。</li>
+          </ul>
+        </section>
+        <section>
+          <h3><i>2</i>单张重抽与锁定</h3>
+          <ul>
+            <li><b>点击卡片</b>：只重抽这一位，其他人不变。</li>
+            <li><b>点卡片左上角的锁</b>：锁定这位干员，之后点「重抽」时会原位保留。</li>
+            <li>有锁定时，提示栏会出现 <b>全部解锁</b> 按钮。数量不能少于已锁定的人数。</li>
+          </ul>
+        </section>
+        <section>
+          <h3><i>3</i>筛选卡池</h3>
+          <ul>
+            <li><b>星级</b> 与 <b>职业</b> 按钮可多选，点一下切换开关；默认只抽六星、全部职业。</li>
+            <li>按住 <b>Ctrl</b> 或 <b>Shift</b> 再点，只保留这一项。</li>
+            <li>右上角「当前卡池」显示符合条件的人数。</li>
+          </ul>
+        </section>
+        <section>
+          <h3><i>4</i>指定必出 / 排除</h3>
+          <ul>
+            <li><b class="c-must">必出</b>：每次抽取一定出现，不受星级、职业筛选限制。</li>
+            <li><b class="c-ban">排除</b>：永远不会被抽到。</li>
+            <li>两种设置方式：在「指定」搜索框输入中文或英文名后点按钮；或点 <b>＋ 选择必出 / ＋ 选择排除</b> 打开头像面板，筛选后直接点头像。</li>
+            <li>已设置的干员显示在搜索框下方，点名字即可移除。设置会保存在当前浏览器。</li>
+          </ul>
+        </section>
+        <section>
+          <h3><i>5</i>其他</h3>
+          <ul>
+            <li>快捷键：<kbd>空格</kbd> / <kbd>回车</kbd> 抽取，<kbd>Esc</kbd> 关闭弹窗。</li>
+            <li>卡片右下角 <b>PRTS ↗</b> 可跳转到该干员的 PRTS 页面。</li>
+            <li>收录 432 名可获得干员，不含预备干员与集成战略专用角色。</li>
+          </ul>
+        </section>
+      </div>
+      <div class="m-foot"><span id="mInfo2"></span><button class="btn primary sm" id="helpDone">知道了</button></div>
+    </div>
+  </div>
 
   <div class="controls">
     <div>
@@ -419,6 +490,7 @@ cnt.onchange = clampCount; dup.onchange = clampCount;
 document.querySelectorAll(".quick button").forEach(b => b.onclick = () => { cnt.value = b.dataset.q; clampCount(); });
 $("#draw").onclick = draw;
 document.addEventListener("keydown", e => {
+  if (!$("#help").hidden) { if (e.key === "Escape") closeHelp(); return; }
   if (!$("#modal").hidden) { if (e.key === "Escape") closePanel(); return; }
   if ((e.key === " " || e.key === "Enter") && e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON"){ e.preventDefault(); draw(); }
 });
@@ -539,6 +611,13 @@ $("#mClearK").onclick = () => {
   const set = mMode === "must" ? must : ban; const ids = [...set];
   set.clear(); saveSel(); refreshSel(); ids.forEach(updateTile); mHeader();
 };
+
+// ---- 使用说明
+const help = $("#help"); let helpFocus = null;
+function openHelp(){ helpFocus = document.activeElement; help.hidden = false; document.body.style.overflow = "hidden"; $("#helpDone").focus(); }
+function closeHelp(){ help.hidden = true; document.body.style.overflow = ""; if (helpFocus && helpFocus.focus) helpFocus.focus(); }
+$("#helpBtn").onclick = openHelp; $("#helpClose").onclick = closeHelp; $("#helpDone").onclick = closeHelp;
+help.addEventListener("click", e => { if (e.target === help) closeHelp(); });
 
 $("#allN").textContent = OPS.length;
 updatePool(); render();
