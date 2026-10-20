@@ -10,6 +10,7 @@
   --accent:#ffcf3a; --accent-ink:#1a1400; --star:#ffb400; --pop:#202126; --must:#5fd08a; --must-bg:#2f7d4a; --ban:#ff7a7a; --ban-bg:#8a2e2e;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--text);
   font-family:"Microsoft YaHei UI","PingFang SC","Noto Sans SC",system-ui,sans-serif}
 body{min-height:100vh;
@@ -113,6 +114,46 @@ h1 small{display:block;font:600 11px/1.6 Consolas,monospace;letter-spacing:.35em
 .schip:hover{border-color:var(--dim);border-left-color:var(--rc)}
 .schip span{color:var(--dim);margin-left:6px}
 .pick-tip{font-size:12px;color:var(--dim)}
+.sel-lbl{background:transparent;cursor:pointer;font-family:inherit}
+.sel-lbl:hover{filter:brightness(1.3)}
+.mini.must{color:var(--must);border-color:var(--must-bg)}
+.mini.ban{color:var(--ban);border-color:var(--ban-bg)}
+.mini.must:hover,.mini.ban:hover{filter:brightness(1.3)}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet{background:var(--bg);border:1px solid var(--line);width:min(1040px,100%);height:min(780px,100%);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.m-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:2px solid var(--text)}
+.m-head h2{margin:0 8px 0 0;font-size:16px;letter-spacing:.06em}
+.m-tabs{display:flex;gap:6px;flex:1}
+.m-tab{height:34px;padding:0 14px;border:1px solid var(--line);background:var(--panel);color:var(--dim);cursor:pointer;font-weight:700;font-size:14px;font-family:inherit}
+.m-tab span{font:12px Consolas,monospace;margin-left:4px;opacity:.8}
+.m-tab.must.on{color:#fff;background:var(--must-bg);border-color:var(--must)}
+.m-tab.ban.on{color:#fff;background:var(--ban-bg);border-color:var(--ban)}
+.m-close{width:34px;height:34px;border:1px solid var(--line);background:transparent;color:var(--text);font-size:20px;line-height:1;cursor:pointer}
+.m-close:hover{border-color:var(--dim)}
+.m-filters{display:flex;flex-direction:column;gap:6px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.m-filters input{height:32px;width:100%;max-width:320px;padding:0 10px;background:var(--panel);border:1px solid var(--line);color:var(--text);font:inherit;font-size:14px}
+.m-filters input:focus{outline:none;border-color:var(--accent)}
+.m-chips{display:flex;flex-wrap:wrap;gap:4px}
+.m-chips .chip{height:26px;font-size:12px;padding:0 10px}
+.m-grid{flex:1;min-height:0;overflow:auto;padding:12px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;align-content:start}
+.tile{position:relative;padding:0;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--text);text-align:left;overflow:hidden;font-family:inherit}
+.tile img{display:block;width:100%;aspect-ratio:1;max-width:100%;object-fit:cover;object-position:50% 8%;background:var(--line)}
+.tile .tn{display:block;font-size:12px;padding:4px 5px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:2px solid var(--rc)}
+.tile .ts{display:block;font-size:9px;color:var(--rc);padding:0 5px 4px;letter-spacing:-1px}
+.tile:hover{border-color:var(--dim)}
+.tile:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.tile .badge{position:absolute;top:4px;right:4px;font-size:11px;padding:1px 5px;color:#fff;display:none}
+.tile.is-must{outline:2px solid var(--must);outline-offset:-2px}
+.tile.is-must .badge{display:block;background:var(--must-bg)}
+.tile.is-ban{outline:2px solid var(--ban);outline-offset:-2px}
+.tile.is-ban img{filter:grayscale(1) brightness(.5)}
+.tile.is-ban .badge{display:block;background:var(--ban-bg)}
+.m-empty{grid-column:1/-1;padding:40px;text-align:center;color:var(--dim)}
+.m-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--line)}
+.m-foot #mInfo{flex:1;min-width:0;font-size:12px;color:var(--dim)}
+.btn.sm{height:36px;padding:0 24px;font-size:14px}
+@media (max-width:640px){.modal{padding:0}.sheet{height:100%;border:0;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}.m-head h2{display:none}.m-grid{grid-template-columns:repeat(auto-fill,minmax(72px,1fr))}}
 .card.locked:hover{transform:none}
 .hintrow{display:flex;gap:12px;align-items:center;min-height:20px}
 .mini{height:24px;padding:0 10px;border:1px solid var(--line);background:var(--panel);color:var(--dim);cursor:pointer;font-size:12px}
@@ -159,10 +200,35 @@ footer a{color:var(--dim)}
         <input id="q" type="search" placeholder="搜索干员（中文名或英文名），设为必出或排除" autocomplete="off" aria-label="搜索干员">
         <div class="results" id="results" hidden></div>
       </div>
+      <button class="mini must" data-open="must">＋ 选择必出</button>
+      <button class="mini ban" data-open="ban">＋ 选择排除</button>
       <button class="mini" id="clearSel" hidden>清空指定</button>
     </div>
-    <div class="sel-row" id="mustRow" hidden><span class="sel-lbl must">必出</span><span class="sel-list" id="mustList"></span></div>
-    <div class="sel-row" id="banRow" hidden><span class="sel-lbl ban">排除</span><span class="sel-list" id="banList"></span></div>
+    <div class="sel-row" id="mustRow" hidden><button class="sel-lbl must" data-open="must" title="打开选择面板">必出</button><span class="sel-list" id="mustList"></span></div>
+    <div class="sel-row" id="banRow" hidden><button class="sel-lbl ban" data-open="ban" title="打开选择面板">排除</button><span class="sel-list" id="banList"></span></div>
+  </div>
+  <div class="modal" id="modal" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="选择干员">
+      <div class="m-head">
+        <h2>选择干员</h2>
+        <div class="m-tabs">
+          <button class="m-tab must" data-mode="must">必出<span id="mMustN"></span></button>
+          <button class="m-tab ban" data-mode="ban">排除<span id="mBanN"></span></button>
+        </div>
+        <button class="m-close" id="mClose" aria-label="关闭">×</button>
+      </div>
+      <div class="m-filters">
+        <input id="mq" type="search" placeholder="按名字筛选" autocomplete="off" aria-label="按名字筛选">
+        <div class="m-chips" id="mRar"></div>
+        <div class="m-chips" id="mProf"></div>
+      </div>
+      <div class="m-grid" id="mGrid"></div>
+      <div class="m-foot">
+        <span id="mInfo"></span>
+        <button class="mini" id="mClearK">清空当前分类</button>
+        <button class="btn primary sm" id="mDone">完 成</button>
+      </div>
+    </div>
   </div>
   <div class="hint hintrow"><span id="hint"></span><button class="mini" id="unlockAll" hidden>全部解锁</button></div>
   <div class="grid" id="grid"></div>
@@ -352,6 +418,7 @@ cnt.onchange = clampCount; dup.onchange = clampCount;
 document.querySelectorAll(".quick button").forEach(b => b.onclick = () => { cnt.value = b.dataset.q; clampCount(); });
 $("#draw").onclick = draw;
 document.addEventListener("keydown", e => {
+  if (!$("#modal").hidden) { if (e.key === "Escape") closePanel(); return; }
   if ((e.key === " " || e.key === "Enter") && e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON"){ e.preventDefault(); draw(); }
 });
 
@@ -361,6 +428,7 @@ function setSel(id, kind){
   if (kind === "must") { if (must.has(id)) must.delete(id); else { must.add(id); ban.delete(id); } }
   else { if (ban.has(id)) ban.delete(id); else { ban.add(id); must.delete(id); } }
   saveSel(); refreshSel();
+  updateTile(id);
 }
 function chipHTML(o, kind){
   return `<button class="schip r${o.r}" data-id="${o.id}" data-k="${kind}" title="移除">${o.n}<span>×</span></button>`;
@@ -397,6 +465,79 @@ document.addEventListener("click", e => { if (!e.target.closest(".search")) resu
 $("#pick").addEventListener("click", e => { const c = e.target.closest(".schip"); if (c) setSel(c.dataset.id, c.dataset.k); });
 $("#clearSel").onclick = () => { must.clear(); ban.clear(); saveSel(); refreshSel(); };
 refreshSel();
+
+// ---- 选择面板
+const modal = $("#modal"), mGrid = $("#mGrid");
+let mMode = "must";
+const mRon = new Set(), mOn = new Set(PROFS);
+function tileHTML(o){
+  const st = must.has(o.id) ? "is-must" : ban.has(o.id) ? "is-ban" : "";
+  return `<button class="tile r${o.r} ${st}" data-id="${o.id}" title="${o.n} · ${o.p}·${o.s}">
+    <img src="${IMG(o.id)}" alt="" loading="lazy"><span class="badge">${must.has(o.id) ? "必出" : ban.has(o.id) ? "排除" : ""}</span>
+    <span class="tn">${o.n}</span><span class="ts">${"★".repeat(o.r)}</span></button>`;
+}
+function updateTile(id){
+  if (modal.hidden) return;
+  const el = mGrid.querySelector(`.tile[data-id="${id}"]`);
+  if (el) el.outerHTML = tileHTML(OPMAP.get(id));
+  mHeader();
+}
+function mHeader(){
+  document.querySelectorAll(".m-tab").forEach(b => b.classList.toggle("on", b.dataset.mode === mMode));
+  $("#mMustN").textContent = must.size || ""; $("#mBanN").textContent = ban.size || "";
+  const shown = mGrid.querySelectorAll(".tile").length;
+  $("#mInfo").textContent = `点击头像加入或移出「${mMode === "must" ? "必出" : "排除"}」 · 显示 ${shown} 人`;
+  $("#mClearK").textContent = `清空${mMode === "must" ? "必出" : "排除"}`;
+  document.querySelectorAll("#mRar .chip").forEach(c => c.classList.toggle("on", c.dataset.r ? mRon.has(+c.dataset.r) : mRon.size === RARS.length));
+  document.querySelectorAll("#mProf .chip").forEach(c => c.classList.toggle("on", c.dataset.p ? mOn.has(c.dataset.p) : mOn.size === PROFS.length));
+}
+function renderGrid(){
+  const s = $("#mq").value.trim().toLowerCase();
+  const list = OPS.filter(o => mRon.has(o.r) && mOn.has(o.p) && (!s || o.n.toLowerCase().includes(s) || o.e.toLowerCase().includes(s)))
+    .sort((a, b) => b.r - a.r);
+  mGrid.innerHTML = list.length ? list.map(tileHTML).join("") : `<div class="m-empty">没有符合条件的干员</div>`;
+  mHeader();
+}
+function chipToggle(set, all, v, e){
+  if (v === undefined) { if (set.size === all.length) set.clear(); else all.forEach(x => set.add(x)); }
+  else if (e.shiftKey || e.ctrlKey) { set.clear(); set.add(v); }
+  else set.has(v) ? set.delete(v) : set.add(v);
+  renderGrid();
+}
+(function buildMChips(){
+  const mr = $("#mRar"), mp = $("#mProf");
+  const a1 = document.createElement("button"); a1.className = "chip"; a1.textContent = "全部星级";
+  a1.onclick = e => chipToggle(mRon, RARS, undefined, e); mr.appendChild(a1);
+  RARS.forEach(r => { const b = document.createElement("button"); b.className = "chip rar r" + r; b.dataset.r = r;
+    b.innerHTML = `<span class="s">${"★".repeat(r)}</span>`; b.onclick = e => chipToggle(mRon, RARS, r, e); mr.appendChild(b); });
+  const a2 = document.createElement("button"); a2.className = "chip"; a2.textContent = "全部职业";
+  a2.onclick = e => chipToggle(mOn, PROFS, undefined, e); mp.appendChild(a2);
+  PROFS.forEach(p => { const b = document.createElement("button"); b.className = "chip"; b.dataset.p = p; b.textContent = p;
+    b.onclick = e => chipToggle(mOn, PROFS, p, e); mp.appendChild(b); });
+})();
+let lastFocus = null;
+function openPanel(k){
+  mMode = k; lastFocus = document.activeElement;
+  mRon.clear(); (ron.size ? ron : new Set(RARS)).forEach(r => mRon.add(r));
+  mOn.clear(); PROFS.forEach(p => mOn.add(p));
+  $("#mq").value = ""; results.hidden = true;
+  modal.hidden = false; document.body.style.overflow = "hidden";
+  renderGrid(); mGrid.scrollTop = 0; $("#mq").focus();
+}
+function closePanel(){
+  modal.hidden = true; document.body.style.overflow = "";
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-open]"); if (b) openPanel(b.dataset.open); });
+document.querySelectorAll(".m-tab").forEach(b => b.onclick = () => { mMode = b.dataset.mode; mHeader(); });
+mGrid.addEventListener("click", e => { const t = e.target.closest(".tile"); if (t) setSel(t.dataset.id, mMode); });
+$("#mq").addEventListener("input", renderGrid);
+$("#mClose").onclick = closePanel; $("#mDone").onclick = closePanel;
+modal.addEventListener("click", e => { if (e.target === modal) closePanel(); });
+$("#mClearK").onclick = () => {
+  const set = mMode === "must" ? must : ban; const ids = [...set];
+  set.clear(); saveSel(); refreshSel(); ids.forEach(updateTile); mHeader();
+};
 
 $("#allN").textContent = OPS.length;
 updatePool(); render();
