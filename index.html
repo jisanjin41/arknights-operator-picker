@@ -23,7 +23,8 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellips
 .help-btn span{display:grid;place-items:center;width:20px;height:20px;background:var(--accent);color:var(--accent-ink);font:800 13px Consolas,monospace}
 .help-btn:hover{border-color:var(--accent)}
 .sheet.help-sheet{width:min(860px,100%);height:auto;max-height:100%}
-#mInfo2{flex:1}
+#mInfo2{flex:1;font-size:12px;color:var(--dim)}
+#mInfo2 a{color:var(--text)}
 .h-sub{flex:1;font:600 10px Consolas,monospace;letter-spacing:.3em;color:var(--accent)}
 .help-body{overflow-y:auto;min-height:0;flex:1 1 auto;padding:6px 20px 14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:4px 28px;align-content:start}
 .help-body section{min-width:0}
@@ -178,7 +179,15 @@ h1 small{display:block;font:600 11px/1.6 Consolas,monospace;letter-spacing:.35em
 @keyframes flash{0%{box-shadow:0 0 0 2px var(--accent),0 0 24px var(--accent)}100%{box-shadow:none}}
 .empty{border:1px dashed var(--line);padding:60px 20px;text-align:center;color:var(--dim)}
 .empty b{display:block;color:var(--text);font-size:18px;margin-bottom:6px}
-footer{margin-top:40px;font-size:12px;color:var(--dim)}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--dim)}
+.author{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+.author .by{font-size:13px;margin-right:4px}.author .by b{color:var(--text)}
+footer a.soc{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border:1px solid var(--line);background:var(--panel);color:var(--text);text-decoration:none;font-size:13px}
+footer a.soc svg{width:16px;height:16px}
+footer a.soc.bili svg{color:#fb7299}
+footer a.soc:hover{border-color:var(--accent)}
+footer a.soc.bili:hover{border-color:#fb7299}
+.credits{margin:0;line-height:1.7}
 footer a{color:var(--dim)}
 @media (prefers-reduced-motion:reduce){.card,.card.flash{animation:none}}
 @media (max-width:640px){.go{margin-left:0;width:100%}.go .btn{flex:1}h1{font-size:24px}}
@@ -243,7 +252,7 @@ footer a{color:var(--dim)}
           </ul>
         </section>
       </div>
-      <div class="m-foot"><span id="mInfo2"></span><button class="btn primary sm" id="helpDone">知道了</button></div>
+      <div class="m-foot"><span id="mInfo2">作者 tonyshtark · <a href="https://space.bilibili.com/225198974" target="_blank" rel="noopener">Bilibili</a> · <a href="https://github.com/tonyshtark" target="_blank" rel="noopener">GitHub</a></span><button class="btn primary sm" id="helpDone">知道了</button></div>
     </div>
   </div>
 
@@ -306,7 +315,13 @@ footer a{color:var(--dim)}
   <div class="grid" id="grid"></div>
 
   <footer>
-    数据：游戏解包数据（ArknightsGameData，2026-10-16 更新，共 432 名干员）· 立绘来自 ArknightsGameResource（本地 img 文件夹）· 详情链接至 <a href="https://prts.wiki" target="_blank" rel="noopener">PRTS</a> · 快捷键：空格 / 回车 抽取；必出/排除设置会保存在本浏览器；Ctrl/Shift+点击筛选项可只选该项
+    <div class="author">
+      <span class="by">作者 <b>tonyshtark</b></span>
+      <a class="soc bili" href="https://space.bilibili.com/225198974" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.2 2.6 9.9 5h4.2l2.7-2.4a1 1 0 0 1 1.4 1.4L17 5.1h1.5A3.5 3.5 0 0 1 22 8.6v8.9a3.5 3.5 0 0 1-3.5 3.5h-13A3.5 3.5 0 0 1 2 17.5V8.6a3.5 3.5 0 0 1 3.5-3.5H7L5.8 4a1 1 0 0 1 1.4-1.4ZM5.5 7.1c-.8 0-1.5.7-1.5 1.5v8.9c0 .8.7 1.5 1.5 1.5h13c.8 0 1.5-.7 1.5-1.5V8.6c0-.8-.7-1.5-1.5-1.5h-13Zm3 3.4c.6 0 1 .4 1 1v1.6a1 1 0 1 1-2 0v-1.6c0-.6.4-1 1-1Zm7 0c.6 0 1 .4 1 1v1.6a1 1 0 1 1-2 0v-1.6c0-.6.4-1 1-1Z"/></svg>Bilibili</a>
+      <a class="soc gh" href="https://github.com/tonyshtark" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.6 1 1.6 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.5 9.5 0 0 1 5 0c2-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></svg>GitHub</a>
+      <a class="soc" href="https://github.com/tonyshtark/arknights-operator-picker" target="_blank" rel="noopener">源码 ↗</a>
+    </div>
+    <p class="credits">数据：游戏解包数据（ArknightsGameData，2026-10-16 更新，共 432 名干员）· 立绘来自 ArknightsGameResource（本地 img 文件夹）· 详情链接至 <a href="https://prts.wiki" target="_blank" rel="noopener">PRTS</a> · 快捷键：空格 / 回车 抽取；必出/排除设置会保存在本浏览器；Ctrl/Shift+点击筛选项可只选该项</p>
   </footer>
 </div>
 

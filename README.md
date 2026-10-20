@@ -19,6 +19,11 @@
 
 在线：在仓库 Settings → Pages 中选择从 `main` 分支部署，即可通过 GitHub Pages 访问。
 
+## 作者
+
+- Bilibili：[space.bilibili.com/225198974](https://space.bilibili.com/225198974)
+- GitHub：[@tonyshtark](https://github.com/tonyshtark)
+
 ## 数据来源
 
 - 干员数据：[Kengxxiao/ArknightsGameData](https://github.com/Kengxxiao/ArknightsGameData)（2026-10-16）
