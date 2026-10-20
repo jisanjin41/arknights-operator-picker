@@ -7,7 +7,7 @@
 <style>
 :root{
   --bg:#141518; --panel:#1c1d21; --line:#2c2e34; --text:#e9e9ea; --dim:#8b8d94;
-  --accent:#ffcf3a; --accent-ink:#1a1400; --star:#ffb400;
+  --accent:#ffcf3a; --accent-ink:#1a1400; --star:#ffb400; --pop:#202126; --must:#5fd08a; --must-bg:#2f7d4a; --ban:#ff7a7a; --ban-bg:#8a2e2e;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);
@@ -84,7 +84,35 @@ h1 small{display:block;font:600 11px/1.6 Consolas,monospace;letter-spacing:.35em
 .lock:hover{background:rgba(0,0,0,.85)}
 .card.locked{outline:2px solid var(--rc);outline-offset:-2px}
 .card.locked .lock{opacity:1;background:var(--rc);color:#111}
+.card.mustc::after{content:"必出";opacity:1;color:var(--must)}
 .card.locked::after{content:"已锁定";opacity:1;color:var(--rc)}
+.card .nm .mtag{font-size:11px;font-weight:600;padding:1px 5px;margin-left:6px;vertical-align:2px;background:var(--must-bg);color:#fff}
+.pick{display:flex;flex-direction:column;gap:8px;margin:0 0 18px}
+.pick-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.search{position:relative;flex:1 1 240px;max-width:420px;min-width:0}
+.search input{width:100%;height:34px;padding:0 10px;background:var(--panel);border:1px solid var(--line);color:var(--text);font:inherit;font-size:14px}
+.search input:focus{outline:none;border-color:var(--accent)}
+.results{position:absolute;z-index:20;top:calc(100% + 2px);left:0;right:0;background:var(--pop);border:1px solid var(--line);max-height:360px;overflow:auto;box-shadow:0 10px 28px rgba(0,0,0,.55)}
+.res{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--line)}
+.res:last-child{border-bottom:0}
+.res img{width:30px;height:30px;object-fit:cover;object-position:50% 8%;flex:none;background:var(--panel)}
+.res .rn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.res .rn small{color:var(--dim);margin-left:6px;font-size:11px}
+.res .rn .st{color:var(--rc);font-size:11px;margin-left:6px}
+.res .none{padding:10px;color:var(--dim);font-size:13px}
+.tg{height:26px;padding:0 10px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer;font-size:12px;flex:none}
+.tg:hover{color:var(--text);border-color:var(--dim)}
+.tg.must.on{background:var(--must-bg);border-color:var(--must);color:#fff}
+.tg.ban.on{background:var(--ban-bg);border-color:var(--ban);color:#fff}
+.sel-row{display:flex;align-items:flex-start;gap:8px}
+.sel-lbl{font-size:12px;line-height:24px;padding:0 8px;flex:none;border:1px solid}
+.sel-lbl.must{color:var(--must);border-color:var(--must-bg)}
+.sel-lbl.ban{color:var(--ban);border-color:var(--ban-bg)}
+.sel-list{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.schip{height:26px;padding:0 8px;border:1px solid var(--line);border-left:3px solid var(--rc);background:var(--panel);color:var(--text);cursor:pointer;font-size:13px}
+.schip:hover{border-color:var(--dim);border-left-color:var(--rc)}
+.schip span{color:var(--dim);margin-left:6px}
+.pick-tip{font-size:12px;color:var(--dim)}
 .card.locked:hover{transform:none}
 .hintrow{display:flex;gap:12px;align-items:center;min-height:20px}
 .mini{height:24px;padding:0 10px;border:1px solid var(--line);background:var(--panel);color:var(--dim);cursor:pointer;font-size:12px}
@@ -124,11 +152,23 @@ footer a{color:var(--dim)}
 
   <div class="filters" id="rfilters"><span class="lbl">星级</span></div>
   <div class="filters" id="filters"><span class="lbl">职业</span></div>
+  <div class="pick" id="pick">
+    <div class="pick-head">
+      <span class="lbl">指定</span>
+      <div class="search">
+        <input id="q" type="search" placeholder="搜索干员（中文名或英文名），设为必出或排除" autocomplete="off" aria-label="搜索干员">
+        <div class="results" id="results" hidden></div>
+      </div>
+      <button class="mini" id="clearSel" hidden>清空指定</button>
+    </div>
+    <div class="sel-row" id="mustRow" hidden><span class="sel-lbl must">必出</span><span class="sel-list" id="mustList"></span></div>
+    <div class="sel-row" id="banRow" hidden><span class="sel-lbl ban">排除</span><span class="sel-list" id="banList"></span></div>
+  </div>
   <div class="hint hintrow"><span id="hint"></span><button class="mini" id="unlockAll" hidden>全部解锁</button></div>
   <div class="grid" id="grid"></div>
 
   <footer>
-    数据：游戏解包数据（ArknightsGameData，2026-10-16 更新，共 432 名干员）· 立绘来自 ArknightsGameResource（本地 img 文件夹）· 详情链接至 <a href="https://prts.wiki" target="_blank" rel="noopener">PRTS</a> · 快捷键：空格 / 回车 抽取；Ctrl/Shift+点击筛选项可只选该项
+    数据：游戏解包数据（ArknightsGameData，2026-10-16 更新，共 432 名干员）· 立绘来自 ArknightsGameResource（本地 img 文件夹）· 详情链接至 <a href="https://prts.wiki" target="_blank" rel="noopener">PRTS</a> · 快捷键：空格 / 回车 抽取；必出/排除设置会保存在本浏览器；Ctrl/Shift+点击筛选项可只选该项
   </footer>
 </div>
 
@@ -148,7 +188,16 @@ const IMG = id => "img/" + id + ".webp";
 const wiki = n => "https://prts.wiki/w/" + encodeURIComponent(n);
 const RARS = [6,5,4,3,2,1];
 const ron = new Set([6]);
-const pool = () => OPS.filter(o => on.has(o.p) && ron.has(o.r));
+const OPMAP = new Map(OPS.map(o => [o.id, o]));
+const must = new Set(), ban = new Set();
+try {
+  const s = JSON.parse(localStorage.getItem("ak-picker-sel") || "{}");
+  (s.must || []).forEach(id => OPMAP.has(id) && must.add(id));
+  (s.ban || []).forEach(id => OPMAP.has(id) && !must.has(id) && ban.add(id));
+} catch (e) {}
+function saveSel(){ try { localStorage.setItem("ak-picker-sel", JSON.stringify({ must: [...must], ban: [...ban] })); } catch (e) {} }
+const pool = () => OPS.filter(o => on.has(o.p) && ron.has(o.r) && !ban.has(o.id));
+const cardClass = (o, i) => "card r" + o.r + (must.has(o.id) ? " mustc" : "") + (locks[i] ? " locked" : "");
 const rnd = n => { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; };
 
 function sample(src, k, exclude){
@@ -162,7 +211,7 @@ function cardHTML(o, i){
   return `<button class="lock" title="${locks[i] ? "解锁" : "锁定（重抽时保留）"}" onclick="event.stopPropagation();toggleLock(${i})">${locks[i] ? ICON_LOCK : ICON_OPEN}</button><div class="ph"><img loading="lazy" alt="${o.n}" src="${IMG(o.id)}"
       onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'fb',textContent:'${o.n[0]}'}))">
       <span class="stars">${"★".repeat(o.r)}</span></div>
-    <div class="info"><div class="nm">${o.n}</div><div class="en">${o.e || "&nbsp;"}</div>
+    <div class="info"><div class="nm">${o.n}${must.has(o.id) ? '<span class="mtag">必出</span>' : ""}</div><div class="en">${o.e || "&nbsp;"}</div>
       <div class="cls"><b>${o.p}</b>${o.s}</div>
       <a class="wiki" href="${wiki(o.n)}" target="_blank" rel="noopener" title="在 PRTS 查看" onclick="event.stopPropagation()">PRTS ↗</a></div>`;
 }
@@ -175,7 +224,7 @@ function render(){
   }
   current.forEach((o, i) => {
     const d = document.createElement("div");
-    d.className = "card r" + current[i].r + (locks[i] ? " locked" : ""); d.style.animationDelay = (locks[i] ? 0 : i * 40) + "ms";
+    d.className = cardClass(o, i); d.style.animationDelay = (locks[i] ? 0 : i * 40) + "ms";
     if (locks[i]) d.style.animation = "none";
     d.innerHTML = cardHTML(o, i);
     d.onclick = () => rerollOne(i, d);
@@ -202,6 +251,7 @@ $("#unlockAll").onclick = () => { locks = locks.map(() => false); render(); };
 
 function rerollOne(i, el){
   if (locks[i]) { flashHint("这位已锁定，先点左上角解锁才能重抽"); return; }
+  if (must.has(current[i].id)) { flashHint("这位是必出干员，先在上方取消必出才能重抽"); return; }
   const src = pool();
   const taken = new Set(current.map(o => o.id));
   let pick;
@@ -212,7 +262,7 @@ function rerollOne(i, el){
     pick = rest[rnd(rest.length)];
   }
   current[i] = pick;
-  el.className = "card r" + pick.r; el.style.animation = ""; el.innerHTML = cardHTML(pick, i);
+  el.className = cardClass(pick, i); el.style.animation = ""; el.innerHTML = cardHTML(pick, i);
   el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
 }
 
@@ -221,9 +271,14 @@ function draw(){
   const k = clampCount();
   const kept = current.map((o, i) => locks[i] ? o : null);
   const keptOps = kept.filter(Boolean);
-  const need = k - keptOps.length;
+  const keptIds = new Set(keptOps.map(o => o.id));
+  const mustOps = [...must].map(id => OPMAP.get(id)).filter(o => !keptIds.has(o.id));
+  const taken = new Set([...keptIds, ...mustOps.map(o => o.id)]);
+  const need = k - keptOps.length - mustOps.length;
   if (need > 0 && !src.length) { flashHint("当前卡池为空，请调整筛选"); return; }
-  const picks = sample(src, need, new Set(keptOps.map(o => o.id)));
+  const fresh = sample(src.filter(o => !must.has(o.id)), Math.max(0, need), taken);
+  const picks = [...mustOps, ...fresh];
+  for (let i = picks.length - 1; i > 0; i--){ const j = rnd(i + 1); [picks[i], picks[j]] = [picks[j], picks[i]]; }
   // 锁定的干员尽量留在原位置
   const next = new Array(k).fill(null), nextLocks = new Array(k).fill(false);
   const overflow = [];
@@ -236,8 +291,9 @@ function draw(){
 
 function clampCount(){
   const lockedOps = current.filter((o, i) => locks[i]);
-  const ids = new Set(pool().map(o => o.id)); lockedOps.forEach(o => ids.add(o.id));
-  const min = Math.max(1, lockedOps.length);
+  const ids = new Set(pool().map(o => o.id)); lockedOps.forEach(o => ids.add(o.id)); must.forEach(id => ids.add(id));
+  const lockedIds = new Set(lockedOps.map(o => o.id));
+  const min = Math.max(1, lockedOps.length + [...must].filter(id => !lockedIds.has(id)).length);
   const max = Math.max(min, dup.checked ? 99 : ids.size);
   let v = parseInt(cnt.value, 10); if (isNaN(v)) v = 1;
   v = Math.min(max, Math.max(min, v)); cnt.value = v; cnt.max = max; return v;
@@ -247,7 +303,7 @@ function flashHint(t){ const h = $("#hint"); h.textContent = t; clearTimeout(hin
 
 function updatePool(){
   const n = pool().length;
-  $("#poolN").textContent = n; $("#draw").disabled = !n && !locks.some(Boolean); clampCount();
+  $("#poolN").textContent = n; $("#draw").disabled = !n && !locks.some(Boolean) && !must.size; clampCount();
   refreshChips();
 }
 
@@ -298,6 +354,49 @@ $("#draw").onclick = draw;
 document.addEventListener("keydown", e => {
   if ((e.key === " " || e.key === "Enter") && e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON"){ e.preventDefault(); draw(); }
 });
+
+// ---- 指定干员：必出 / 排除
+const q = $("#q"), results = $("#results");
+function setSel(id, kind){
+  if (kind === "must") { if (must.has(id)) must.delete(id); else { must.add(id); ban.delete(id); } }
+  else { if (ban.has(id)) ban.delete(id); else { ban.add(id); must.delete(id); } }
+  saveSel(); refreshSel();
+}
+function chipHTML(o, kind){
+  return `<button class="schip r${o.r}" data-id="${o.id}" data-k="${kind}" title="移除">${o.n}<span>×</span></button>`;
+}
+function refreshSel(){
+  const m = [...must].map(id => OPMAP.get(id)), b = [...ban].map(id => OPMAP.get(id));
+  $("#mustList").innerHTML = m.map(o => chipHTML(o, "must")).join("");
+  $("#banList").innerHTML = b.map(o => chipHTML(o, "ban")).join("");
+  $("#mustRow").hidden = !m.length; $("#banRow").hidden = !b.length;
+  $("#clearSel").hidden = !(m.length || b.length);
+  if (!results.hidden) showResults();
+  current.forEach((o, i) => { const el = cardEl(i); if (el) { el.className = cardClass(o, i); el.style.animation = "none"; el.innerHTML = cardHTML(o, i); } });
+  updatePool();
+}
+function showResults(){
+  const s = q.value.trim().toLowerCase();
+  if (!s) { results.hidden = true; return; }
+  const hits = OPS.filter(o => o.n.toLowerCase().includes(s) || o.e.toLowerCase().includes(s))
+    .sort((a, b) => (b.n.toLowerCase().startsWith(s) - a.n.toLowerCase().startsWith(s)) || b.r - a.r).slice(0, 12);
+  results.innerHTML = hits.length ? hits.map(o => `<div class="res r${o.r}">
+      <img src="${IMG(o.id)}" alt="" loading="lazy">
+      <div class="rn">${o.n}<small>${o.p}·${o.s}</small><span class="st">${"★".repeat(o.r)}</span></div>
+      <button class="tg must${must.has(o.id) ? " on" : ""}" data-id="${o.id}" data-k="must">必出</button>
+      <button class="tg ban${ban.has(o.id) ? " on" : ""}" data-id="${o.id}" data-k="ban">排除</button>
+    </div>`).join("") : `<div class="none">没有找到「${q.value.trim().replace(/[<>&]/g, "")}」</div>`;
+  results.hidden = false;
+}
+q.addEventListener("input", showResults);
+q.addEventListener("focus", showResults);
+q.addEventListener("keydown", e => { if (e.key === "Escape") { q.value = ""; results.hidden = true; q.blur(); } });
+results.addEventListener("mousedown", e => e.preventDefault());
+results.addEventListener("click", e => { const b = e.target.closest(".tg"); if (b) setSel(b.dataset.id, b.dataset.k); });
+document.addEventListener("click", e => { if (!e.target.closest(".search")) results.hidden = true; });
+$("#pick").addEventListener("click", e => { const c = e.target.closest(".schip"); if (c) setSel(c.dataset.id, c.dataset.k); });
+$("#clearSel").onclick = () => { must.clear(); ban.clear(); saveSel(); refreshSel(); };
+refreshSel();
 
 $("#allN").textContent = OPS.length;
 updatePool(); render();
