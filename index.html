@@ -43,6 +43,8 @@ html.live body{background:var(--lv-bg,#ffffff);background-image:none}
 .lv-view{position:relative;overflow:hidden}
 .lv-track{position:absolute;left:0;top:0;display:flex;gap:var(--gap);will-change:transform}
 .lv-track.v{flex-direction:column}
+.lv-track.lv-grid{flex-wrap:wrap;justify-content:center;align-content:center}
+.lv-track.v.lv-grid{justify-content:center}
 .lc{flex:none;width:var(--d);height:var(--d);border-radius:50%;overflow:hidden;background:#2c2e34}
 .lc img{width:100%;height:100%;object-fit:cover;object-position:50% 14%;display:block}
 .lv-track[data-shape="square"] .lc{border-radius:0}
@@ -358,7 +360,7 @@ footer a{color:var(--dim)}
       <ul>
         <li>点右上角「▶ 小窗展示」打开小窗，抽取、重抽、删除都会同步到小窗。</li>
         <li>这一行的方向、形状、滚动、背景改了会立刻作用到小窗；切换横向 / 竖向时小窗会自动变成横长或竖长。</li>
-        <li>默认一次显示 6 位，把小窗拉长可以多显示几位；放不下时循环滚动。</li>
+        <li>小窗会自动选择排布：能一次放下就排成一行或多行、头像尽量大；放不下时排成一行循环滚动（至少显示 6 位，拉长窗口显示更多）。</li>
       </ul>
     </section>
     <section>
@@ -883,29 +885,47 @@ if (IS_LIVE) (function(){
   }
   function build(){
     const list = ids.map(id => OPMAP.get(id)).filter(Boolean);
-    const n = list.length, pad = 12;
+    const n = list.length, pad = 12, g = 0.15;
     const W = innerWidth - pad * 2, H = innerHeight - pad * 2;
     empty.hidden = n > 0; view.hidden = !n;
-    track.classList.toggle("v", cfg.dir === "v");
+    const horiz = cfg.dir === "h";
+    track.classList.toggle("v", !horiz);
     track.dataset.shape = cfg.shape;
-    const along = cfg.dir === "h" ? W : H, across = cfg.dir === "h" ? H : W;
-    // 圆形头像：直径按窗口自适应，间距为直径的 15%
-    // 一次显示几位：至少 6 位；窗口拉长后，按头像铺满窗口高度（竖向为宽度）能放下多少就显示多少
-    const fit = Math.floor((along + 0.15 * across) / (1.15 * across));
-    const slots = Math.min(Math.max(n, 1), Math.max(6, fit));
-    let d = Math.floor(Math.min(along / (slots + 0.15 * (slots - 1)), across));
-    d = Math.max(30, d);
-    const gap = Math.round(d * 0.15);
+    const along = horiz ? W : H, across = horiz ? H : W;
+    // 在 along×across 的区域里放 per 个 × lines 行，头像最大能多大
+    const fitD = (per, lines) => Math.floor(Math.min(along / (per + g * (per - 1)), across / (lines + g * (lines - 1))));
+    // 方案一：滚动。一行（竖向为一列），至少显示 6 位，窗口越长显示越多
+    const slots = Math.max(6, Math.floor((along + g * across) / ((1 + g) * across)));
+    const dScroll = fitD(slots, 1);
+    // 方案二：静止。全部干员一次显示完，自动选几行，让头像尽量大
+    let best = { d: 0, lines: 1, per: Math.max(n, 1) };
+    for (let lines = 1; lines <= Math.min(Math.max(n, 1), 12); lines++) {
+      const per = Math.ceil(Math.max(n, 1) / lines), d = fitD(per, lines);
+      if (d > best.d) best = { d, lines, per };
+    }
+    // 能全部放下、且头像不比滚动时小太多，就用静止排布；否则滚动
+    const grid = n <= slots || best.d >= dScroll * 0.8;
+    const d = Math.max(30, grid ? best.d : dScroll);
+    const gap = Math.round(d * g);
     track.style.setProperty("--d", d + "px"); track.style.setProperty("--gap", gap + "px");
     step = d + gap;
-    const span = slots * d + gap * (slots - 1);
     let vw, vh;
-    if (cfg.dir === "h") { vw = span; vh = d; } else { vw = d; vh = span; }
+    if (grid) {
+      const a = best.per * d + gap * (best.per - 1), c = best.lines * d + gap * (best.lines - 1);
+      [vw, vh] = horiz ? [a, c] : [c, a];
+      track.classList.add("lv-grid");
+      track.style.width = vw + "px"; track.style.height = vh + "px";
+      track.innerHTML = list.map(cardHTML).join("");
+      cycle = 0; offset = 0;
+    } else {
+      const span = slots * d + gap * (slots - 1);
+      [vw, vh] = horiz ? [span, d] : [d, span];
+      track.classList.remove("lv-grid");
+      track.style.width = ""; track.style.height = "";
+      track.innerHTML = list.concat(list).map(cardHTML).join("");
+      cycle = n * step; offset %= cycle;
+    }
     view.style.width = vw + "px"; view.style.height = vh + "px";
-    const loop = n > slots;
-    track.innerHTML = (loop ? list.concat(list) : list).map(cardHTML).join("");
-    cycle = loop ? n * step : 0;
-    if (!loop) offset = 0; else offset %= cycle;
     paint();
   }
   function paint(){
