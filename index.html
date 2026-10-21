@@ -45,6 +45,7 @@ html.live body{background:var(--lv-bg,#141518);background-image:none}
 .lv-track.v{flex-direction:column}
 .lc{flex:none;width:var(--d);height:var(--d);border-radius:50%;overflow:hidden;background:#2c2e34}
 .lc img{width:100%;height:100%;object-fit:cover;object-position:50% 14%;display:block}
+.lv-track[data-shape="square"] .lc{border-radius:0}
 .lv-empty{color:#8b8d94;font-size:14px;letter-spacing:.2em}
 .lv-bar{position:fixed;left:8px;right:8px;top:8px;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:8px 10px;background:rgba(20,21,24,.94);border:1px solid #2c2e34;color:#e9e9ea;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s}
 .lv-bar.show{opacity:1;pointer-events:auto}
@@ -95,9 +96,12 @@ h1 small{display:block;font:600 11px/1.6 Consolas,monospace;letter-spacing:.35em
 .r6{--rc:#ff9a2e}.r5{--rc:#ffd23a}.r4{--rc:#c9a6ff}.r3{--rc:#4fb6ff}.r2{--rc:#c8e04a}.r1{--rc:#b8b8b8}
 .chip.rar.on{box-shadow:inset 0 -2px 0 var(--rc);border-color:var(--rc)}
 .chip.rar span.s{color:var(--rc)}
-.card::after{content:"点击重抽";position:absolute;top:8px;right:8px;font-size:11px;padding:2px 6px;background:rgba(0,0,0,.65);
+.card::after{content:"点击锁定";position:absolute;top:12px;right:44px;font-size:11px;padding:2px 6px;background:rgba(0,0,0,.65);
   color:var(--accent);opacity:0;transition:opacity .15s}
 .card:hover::after{opacity:1}
+.del{position:absolute;top:8px;right:8px;z-index:2;width:30px;height:30px;display:grid;place-items:center;border:0;background:rgba(0,0,0,.6);color:#fff;opacity:.55;cursor:pointer;font-size:20px;line-height:1;transition:opacity .15s,background .15s}
+.card:hover .del{opacity:1}
+.del:hover{background:#c0392b}
 .card .ph{background:linear-gradient(160deg,color-mix(in srgb,var(--rc) 30%,#1c1d21),#1c1d21 70%)!important;aspect-ratio:3/4;overflow:hidden;position:relative;background:linear-gradient(160deg,#3a2f12,#1c1d21 70%);display:grid;place-items:center}
 .card .ph img{width:100%;height:100%;object-fit:cover;object-position:50% 8%;display:block;transition:transform .3s}
 .card:hover .ph img{transform:scale(1.04)}
@@ -120,8 +124,17 @@ h1 small{display:block;font:600 11px/1.6 Consolas,monospace;letter-spacing:.35em
 .lock:hover{background:rgba(0,0,0,.85)}
 .card.locked{outline:2px solid var(--rc);outline-offset:-2px}
 .card.locked .lock{opacity:1;background:var(--rc);color:#111}
+.rr{position:absolute;top:8px;left:8px;z-index:2;width:26px;height:26px;display:grid;place-items:center;border:0;cursor:pointer;background:rgba(0,0,0,.6);color:#fff;opacity:.55;transition:opacity .15s,background .15s}
+.rr svg{width:14px;height:14px}
+.card:hover .rr{opacity:1}
+.rr:hover{background:var(--accent);color:var(--accent-ink)}
+.card.locked .rr{opacity:.35;cursor:not-allowed}
+.card.locked .rr:hover{background:rgba(0,0,0,.6);color:#fff}
+.lk{position:absolute;top:8px;left:40px;z-index:2;width:26px;height:26px;display:grid;place-items:center;background:var(--rc);color:#111}
+.lk svg{width:14px;height:14px}
 .card.mustc::after{content:"必出";opacity:1;color:var(--must)}
 .card.locked::after{content:"已锁定";opacity:1;color:var(--rc)}
+.card.locked:hover::after{content:"点击解锁"}
 .card .nm .mtag{font-size:11px;font-weight:600;padding:1px 5px;margin-left:6px;vertical-align:2px;background:var(--must-bg);color:#fff}
 .pick{display:flex;flex-direction:column;gap:8px;margin:0 0 18px}
 .pick-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -244,11 +257,12 @@ footer a{color:var(--dim)}
           </ul>
         </section>
         <section>
-          <h3><i>2</i>单张重抽与锁定</h3>
+          <h3><i>2</i>单张重抽、锁定与删除</h3>
           <ul>
-            <li><b>点击卡片</b>：只重抽这一位，其他人不变。</li>
-            <li><b>点卡片左上角的锁</b>：锁定这位干员，之后点「重抽」时会原位保留。</li>
+            <li><b>点击卡片</b>：锁定这位干员（卡片出现彩色边框和锁标记），之后点「重抽」时会原位保留；再点一次解锁。</li>
+            <li><b>点卡片左上角的 ↻</b>：只重抽这一位，其他人不变；锁定的卡片要先解锁。</li>
             <li>有锁定时，提示栏会出现 <b>全部解锁</b> 按钮。数量不能少于已锁定的人数。</li>
+            <li><b>点卡片右上角的 ×</b>：删除这位干员，其他卡片不动；删错了可在提示栏点 <b>撤销删除</b>（6 秒内）。</li>
           </ul>
         </section>
         <section>
@@ -273,7 +287,7 @@ footer a{color:var(--dim)}
           <ul>
             <li>快捷键：<kbd>空格</kbd> / <kbd>回车</kbd> 抽取，<kbd>Esc</kbd> 关闭弹窗。</li>
             <li>卡片右下角 <b>PRTS ↗</b> 可跳转到该干员的 PRTS 页面。</li>
-            <li><b>小窗展示</b>：右上角按钮打开一个小窗口，同步显示当前抽出的干员（默认 6 位，窗口拉长可显示更多，放不下时循环滚动），可用 OBS「窗口采集」抓取；以圆形头像显示；鼠标移到小窗上可调方向（窗口会自动变成横长或竖长）、速度、背景（含绿幕）。</li>
+            <li><b>小窗展示</b>：右上角按钮打开一个小窗口，同步显示当前抽出的干员（默认 6 位，窗口拉长可显示更多，放不下时循环滚动），可用 OBS「窗口采集」抓取；以圆形或方形头像显示；鼠标移到小窗上可调方向（窗口会自动变成横长或竖长）、速度、背景（含绿幕）。</li>
             <li>收录 432 名可获得干员，不含预备干员与集成战略专用角色。</li>
           </ul>
         </section>
@@ -337,7 +351,7 @@ footer a{color:var(--dim)}
       </div>
     </div>
   </div>
-  <div class="hint hintrow"><span id="hint"></span><button class="mini" id="unlockAll" hidden>全部解锁</button></div>
+  <div class="hint hintrow"><span id="hint"></span><button class="mini" id="undoDel" hidden>撤销删除</button><button class="mini" id="unlockAll" hidden>全部解锁</button></div>
   <div class="grid" id="grid"></div>
 
   <footer>
@@ -356,6 +370,7 @@ footer a{color:var(--dim)}
   <div class="lv-empty" id="lvEmpty">等待抽取…</div>
   <div class="lv-bar" id="lvBar">
     <span class="grp"><b>方向</b><button data-k="dir" data-v="h">横向</button><button data-k="dir" data-v="v">竖向</button></span>
+    <span class="grp"><b>形状</b><button data-k="shape" data-v="circle">圆形</button><button data-k="shape" data-v="square">方形</button></span>
     <span class="grp"><b>滚动</b><button data-k="speed" data-v="1">慢</button><button data-k="speed" data-v="2">中</button><button data-k="speed" data-v="3">快</button></span>
     <span class="grp"><b>背景</b><button data-k="bg" data-v="dark">深色</button><button data-k="bg" data-v="green">绿幕</button><button data-k="bg" data-v="black">纯黑</button></span>
     <span class="tip">OBS 用「窗口采集」抓取本窗口；鼠标移开后这条设置栏会自动隐藏。默认显示 6 位，把窗口拉长可以多显示几位；放不下时会循环滚动。</span>
@@ -372,8 +387,9 @@ const on = new Set(PROFS);
 let current = [];
 let locks = [];
 const ICON_LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="11" width="16" height="10" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const ICON_RR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>';
 const ICON_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="11" width="16" height="10" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>';
-const HINT = "点击卡片重抽这一位 · 点左上角锁可锁定，重抽时保留";
+const HINT = "点击卡片锁定（重抽时保留）· 左上角 ↻ 只重抽这一位 · 右上角 × 删除";
 
 const IMG = id => "img/" + id + ".webp";
 const wiki = n => "https://prts.wiki/w/" + encodeURIComponent(n);
@@ -454,7 +470,7 @@ function sample(src, k, exclude){
 }
 
 function cardHTML(o, i){
-  return `<button class="lock" title="${locks[i] ? "解锁" : "锁定（重抽时保留）"}" onclick="event.stopPropagation();toggleLock(${i})">${locks[i] ? ICON_LOCK : ICON_OPEN}</button><div class="ph"><img loading="lazy" alt="${o.n}" src="${IMG(o.id)}"
+  return `<button class="del" title="删除这位干员" aria-label="删除" onclick="event.stopPropagation();removeCard(${i})">×</button><button class="rr" title="${locks[i] ? "已锁定，先点卡片解锁才能重抽" : "重抽这一位"}" aria-label="重抽这一位" onclick="event.stopPropagation();rerollOne(${i}, cardEl(${i}))">${ICON_RR}</button>${locks[i] ? `<span class="lk" aria-hidden="true">${ICON_LOCK}</span>` : ""}<div class="ph"><img loading="lazy" alt="${o.n}" src="${IMG(o.id)}"
       onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'fb',textContent:'${o.n[0]}'}))">
       <span class="stars">${"★".repeat(o.r)}</span></div>
     <div class="info"><div class="nm">${o.n}${must.has(o.id) ? '<span class="mtag">必出</span>' : ""}</div><div class="en">${o.e || "&nbsp;"}</div>
@@ -473,7 +489,7 @@ function render(){
     d.className = cardClass(o, i); d.style.animationDelay = (locks[i] ? 0 : i * 40) + "ms";
     if (locks[i]) d.style.animation = "none";
     d.innerHTML = cardHTML(o, i);
-    d.onclick = () => rerollOne(i, d);
+    d.onclick = () => toggleLock(i);
     grid.appendChild(d);
   });
   $("#hint").textContent = HINT; updateLockUI();
@@ -481,10 +497,30 @@ function render(){
 }
 
 function cardEl(i){ return grid.children[i]; }
+// 删除一张抽出的卡片，其他卡片不动；可撤销最近一次删除
+let lastDel = null, undoT;
+function removeCard(i){
+  const o = current[i]; if (!o) return;
+  lastDel = { o, lock: locks[i], i };
+  current.splice(i, 1); locks.splice(i, 1);
+  render();
+  if (current.length) $("#hint").textContent = `已删除「${o.n}」`;
+  else $("#hint").textContent = "";
+  const u = $("#undoDel"); u.hidden = false;
+  clearTimeout(undoT); undoT = setTimeout(() => { u.hidden = true; lastDel = null; if (current.length) $("#hint").textContent = HINT; }, 6000);
+}
+$("#undoDel").onclick = () => {
+  if (!lastDel) return;
+  const { o, lock, i } = lastDel; lastDel = null;
+  current.splice(Math.min(i, current.length), 0, o); locks.splice(Math.min(i, locks.length), 0, lock);
+  $("#undoDel").hidden = true; clearTimeout(undoT);
+  render();
+};
 function toggleLock(i){
   locks[i] = !locks[i];
   const el = cardEl(i);
   el.classList.toggle("locked", locks[i]);
+  el.style.animation = "none";
   el.innerHTML = cardHTML(current[i], i);
   updateLockUI();
 }
@@ -497,7 +533,7 @@ function updateLockUI(){
 $("#unlockAll").onclick = () => { locks = locks.map(() => false); render(); };
 
 function rerollOne(i, el){
-  if (locks[i]) { flashHint("这位已锁定，先点左上角解锁才能重抽"); return; }
+  if (locks[i]) { flashHint("这位已锁定，先点一下卡片解锁才能重抽"); return; }
   if (must.has(current[i].id)) { flashHint("这位是必出干员，先在上方取消必出才能重抽"); return; }
   const src = pool();
   const taken = new Set(current.map(o => o.id));
@@ -533,6 +569,7 @@ function draw(){
   kept.forEach((o, i) => { if (!o) return; if (i < k) { next[i] = o; nextLocks[i] = true; } else overflow.push(o); });
   for (let i = 0; i < k; i++) if (!next[i]) { if (overflow.length) { next[i] = overflow.shift(); nextLocks[i] = true; } else next[i] = picks.shift(); }
   current = next.filter(Boolean); locks = nextLocks.slice(0, current.length);
+  lastDel = null; $("#undoDel").hidden = true; clearTimeout(undoT);
   render();
   $("#draw").textContent = "重 抽";
 }
@@ -752,7 +789,7 @@ if (IS_LIVE) (function(){
   document.title = "小窗展示 · 干员抽选";
   const root = $("#live"), view = $("#lvView"), track = $("#lvTrack"), empty = $("#lvEmpty"), bar = $("#lvBar");
   root.hidden = false;
-  const cfg = { dir: "h", speed: "2", bg: "dark" };
+  const cfg = { dir: "h", speed: "2", bg: "dark", shape: "circle" };
   try { Object.assign(cfg, JSON.parse(localStorage.getItem("ak-live-cfg") || "{}")); } catch (e) {}
   cfg.dir = "h"; // 每次打开小窗都从横向开始；速度和背景沿用上次的设置
   const BG = { dark: "#141518", green: "#00ff00", black: "#000000" };
@@ -774,6 +811,7 @@ if (IS_LIVE) (function(){
     const W = innerWidth - pad * 2, H = innerHeight - pad * 2;
     empty.hidden = n > 0; view.hidden = !n;
     track.classList.toggle("v", cfg.dir === "v");
+    track.dataset.shape = cfg.shape;
     const along = cfg.dir === "h" ? W : H, across = cfg.dir === "h" ? H : W;
     // 圆形头像：直径按窗口自适应，间距为直径的 15%
     // 一次显示几位：至少 6 位；窗口拉长后，按头像铺满窗口高度（竖向为宽度）能放下多少就显示多少
