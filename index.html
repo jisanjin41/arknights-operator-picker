@@ -40,7 +40,10 @@ html.live .wrap, html.live body::before{display:none}
 html.live, html.live body{height:100%;overflow:hidden}
 html.live body{background:var(--lv-bg,#ffffff);background-image:none}
 #live{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
-.lv-view{position:relative;overflow:hidden}
+.lv-view{position:relative;overflow:hidden;transition:opacity .2s ease}
+.lc.pop{animation:lcpop .45s ease-out}
+@keyframes lcpop{0%{transform:scale(.55);opacity:.15}60%{transform:scale(1.07);opacity:1}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.lc.pop{animation:none}.lv-view{transition:none}}
 .lv-track{position:absolute;left:0;top:0;display:flex;gap:var(--gap);will-change:transform}
 .lv-track.v{flex-direction:column}
 .lv-track.lv-grid{flex-wrap:wrap;justify-content:center;align-content:center}
@@ -935,21 +938,58 @@ if (IS_LIVE) (function(){
     if (cycle) { offset = (offset + dt * step / SEC_PER_CARD[cfg.speed]) % cycle; paint(); }
     requestAnimationFrame(tick);
   }
+  // 更新要顺滑：单张变化只换那一张；删除/撤销保持滚动位置；整组重抽淡出淡入
+  const preload = list => Promise.race([
+    Promise.all(list.map(id => { const im = new Image(); im.src = IMG(id); return im.decode().catch(() => {}); })),
+    new Promise(r => setTimeout(r, 600))
+  ]);
+  function swapAt(i, id){
+    const o = OPMAP.get(id); if (!o) return;
+    const els = [track.children[i]];
+    if (cycle) els.push(track.children[i + ids.length]);
+    preload([id]).then(() => els.forEach(el => {
+      if (!el) return;
+      const img = el.querySelector("img");
+      img.src = IMG(id); img.alt = o.n; el.title = o.n;
+      el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+    }));
+  }
+  let fading = false, pendingFade = false;
+  function fadeRebuild(){
+    if (fading) { pendingFade = true; return; }
+    fading = true;
+    view.style.opacity = "0";
+    Promise.all([preload(ids), new Promise(r => setTimeout(r, 200))]).then(() => {
+      offset = 0; build();
+      requestAnimationFrame(() => { view.style.opacity = "1"; });
+      setTimeout(() => { fading = false; if (pendingFade) { pendingFade = false; fadeRebuild(); } }, 220);
+    });
+  }
+  const cfgChanged = next => !!next && Object.keys(next).some(k => cfg[k] !== next[k]);
   function setIds(next){
     if (!Array.isArray(next)) return;
-    const changed = next.join() !== ids.join();
-    ids = next; if (changed) offset = 0;
-    build();
+    const prev = ids;
+    if (next.join() === prev.join()) return;
+    ids = next;
+    const sameLen = next.length === prev.length;
+    const diff = sameLen ? next.reduce((k, id, i) => k + (id !== prev[i]), 0) : -1;
+    if (!fading && sameLen && diff <= Math.max(1, Math.floor(next.length / 2)) && track.children.length) {
+      next.forEach((id, i) => { if (id !== prev[i]) swapAt(i, id); });   // 单张重抽：原位替换
+    } else if (!fading && prev.length && next.length && Math.abs(next.length - prev.length) === 1) {
+      build();                                                         // 删除/撤销：保持滚动位置
+    } else {
+      fadeRebuild();                                                   // 整组重抽：淡出再淡入
+    }
   }
   window.addEventListener("message", e => {
     if (!e.data) return;
-    if (e.data.type === "ak-live") { if (e.data.cfg) applyCfg(e.data.cfg); setIds(e.data.ids); }
+    if (e.data.type === "ak-live") { if (cfgChanged(e.data.cfg)) applyCfg(e.data.cfg); setIds(e.data.ids); }
     else if (e.data.type === "ak-live-cfg") applyCfg(e.data.cfg);
   });
   window.addEventListener("storage", e => {
     try {
       if (e.key === "ak-live-data" && e.newValue) setIds(JSON.parse(e.newValue).ids);
-      if (e.key === "ak-live-cfg" && e.newValue) applyCfg(JSON.parse(e.newValue));
+      if (e.key === "ak-live-cfg" && e.newValue) { const c = JSON.parse(e.newValue); if (cfgChanged(c)) applyCfg(c); }
     } catch (x) {}
   });
   try { const d = JSON.parse(localStorage.getItem("ak-live-data") || "null"); if (d) ids = d.ids || []; } catch (e) {}
