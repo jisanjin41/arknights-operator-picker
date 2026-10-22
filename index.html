@@ -306,7 +306,7 @@ footer a{color:var(--dim)}
         <section>
           <h3><i>5</i>其他</h3>
           <ul>
-            <li>快捷键：<kbd>空格</kbd> / <kbd>回车</kbd> 抽取，<kbd>Esc</kbd> 关闭弹窗。</li>
+            <li>快捷键：<kbd>Esc</kbd> 关闭弹窗。</li>
             <li>卡片右下角 <b>PRTS ↗</b> 可跳转到该干员的 PRTS 页面。</li>
             <li><b>小窗展示</b>：右上角按钮打开一个小窗口，同步显示当前抽出的干员（默认 6 位，窗口拉长可显示更多，放不下时循环滚动），可用 OBS「窗口采集」抓取；以圆形或方形头像显示；在主页面「小窗」一行调整方向、形状、滚动速度和背景（纯白、绿幕、纯黑或自定义颜色），抠图参数见该行的「OBS / 绿幕设置说明」。</li>
             <li>收录 432 名可获得干员，不含预备干员与集成战略专用角色。</li>
@@ -419,7 +419,7 @@ footer a{color:var(--dim)}
       <a class="soc gh" href="https://github.com/tonyshtark" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.6 1 1.6 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.5 9.5 0 0 1 5 0c2-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></svg>GitHub</a>
       <a class="soc" href="https://github.com/tonyshtark/arknights-operator-picker" target="_blank" rel="noopener">源码 ↗</a>
     </div>
-    <p class="credits">数据：游戏解包数据（ArknightsGameData，2026-10-16 更新，共 432 名干员）· 立绘来自 ArknightsGameResource（本地 img 文件夹）· 详情链接至 <a href="https://prts.wiki" target="_blank" rel="noopener">PRTS</a> · 快捷键：空格 / 回车 抽取；必出/排除设置会保存在本浏览器；Ctrl/Shift+点击筛选项可只选该项</p>
+    <p class="credits">数据：游戏解包数据（ArknightsGameData，2026-10-16 更新，共 432 名干员）· 立绘来自 ArknightsGameResource（本地 img 文件夹）· 详情链接至 <a href="https://prts.wiki" target="_blank" rel="noopener">PRTS</a> · 必出/排除设置会保存在本浏览器；Ctrl/Shift+点击筛选项可只选该项</p>
   </footer>
 </div>
 
@@ -691,7 +691,6 @@ document.addEventListener("keydown", e => {
   if (IS_LIVE) return;
   if (!$("#help").hidden) { if (e.key === "Escape") closeHelp(); return; }
   if (!$("#modal").hidden) { if (e.key === "Escape") closePanel(); return; }
-  if ((e.key === " " || e.key === "Enter") && e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON"){ e.preventDefault(); draw(); }
 });
 
 // ---- 指定干员：必出 / 排除
