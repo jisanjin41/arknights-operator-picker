@@ -1333,7 +1333,7 @@ function obsPush(){
   const ws = obs.ws; if (!ws || ws.readyState !== 1 || obs.state !== "on") return;
   const data = { ids: items.map(x => x.op.id), cfg: { ...liveCfg } };
   try { ws.send(JSON.stringify({ op: 6, d: { requestType: "CallVendorRequest", requestId: "ak" + (++obs.reqId),
-    requestData: { vendorName: "obs-browser", requestType: "emit_event", requestData: { event_name: OBS_EVENT, event_data: data } } } })); } catch (e) {}
+    requestData: { vendorName: "obs-browser", requestType: "emit_event", requestData: { event_name: OBS_EVENT, event_data: { payload: JSON.stringify(data) } } } } })); } catch (e) {}
 }
 function liveIndicator(){
   const popup = !!(liveWin && !liveWin.closed), live = obs.state === "on" || popup;
@@ -1519,7 +1519,9 @@ if (IS_LIVE) (function(){
   if (IS_OBS) {
     // OBS 浏览器源：数据来自 obs-websocket 的 emit_event；记住最后一次，浏览器源刷新后立刻恢复
     window.addEventListener(OBS_EVENT, e => {
-      const d = e.detail; if (!d || !Array.isArray(d.ids)) return;
+      // OBS 转发前会把数据转成 obs_data，字符串数组会被丢掉，所以数据打包成 payload 字符串发送
+      let d = e.detail; if (d && typeof d.payload === "string") { try { d = JSON.parse(d.payload); } catch (x) { return; } }
+      if (!d || !Array.isArray(d.ids)) return;
       receive(d);
       try { localStorage.setItem("ak-obs-last", JSON.stringify({ ids: d.ids, cfg: d.cfg })); } catch (x) {}
     });
