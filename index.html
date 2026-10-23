@@ -181,6 +181,7 @@ h1 small{display:block;font:600 11px/1.6 Consolas,monospace;letter-spacing:.35em
 .tg:hover{color:var(--text);border-color:var(--dim)}
 .tg.must.on{background:var(--must-bg);border-color:var(--must);color:#fff}
 .tg.ban.on{background:var(--ban-bg);border-color:var(--ban);color:#fff}
+.tg.add.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .sel-row{display:flex;align-items:flex-start;gap:8px}
 .sel-lbl{font-size:12px;line-height:24px;padding:0 8px;flex:none;border:1px solid}
 .sel-lbl.must{color:var(--must);border-color:var(--must-bg)}
@@ -206,6 +207,9 @@ h1 small{display:block;font:600 11px/1.6 Consolas,monospace;letter-spacing:.35em
 .m-tab span{font:12px Consolas,monospace;margin-left:4px;opacity:.8}
 .m-tab.must.on{color:#fff;background:var(--must-bg);border-color:var(--must)}
 .m-tab.ban.on{color:#fff;background:var(--ban-bg);border-color:var(--ban)}
+.m-tab.add.on{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
+.mini.add{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.mini.add:hover{filter:brightness(1.2)}
 .m-close{width:34px;height:34px;border:1px solid var(--line);background:transparent;color:var(--text);font-size:20px;line-height:1;cursor:pointer}
 .m-close:hover{border-color:var(--dim)}
 .m-filters{display:flex;flex-direction:column;gap:6px;padding:10px 16px;border-bottom:1px solid var(--line)}
@@ -227,6 +231,8 @@ h1 small{display:block;font:600 11px/1.6 Consolas,monospace;letter-spacing:.35em
 .tile.is-ban{outline:2px solid var(--ban);outline-offset:-2px}
 .tile.is-ban img{filter:grayscale(1) brightness(.5)}
 .tile.is-ban .badge{display:block;background:var(--ban-bg)}
+.tile.is-in{outline:2px solid var(--accent);outline-offset:-2px}
+.tile.is-in .badge{display:block;background:var(--accent);color:var(--accent-ink)}
 .m-empty{grid-column:1/-1;padding:40px;text-align:center;color:var(--dim)}
 .m-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--line)}
 .m-foot #mInfo{flex:1;min-width:0;font-size:12px;color:var(--dim)}
@@ -313,6 +319,7 @@ footer a{color:var(--dim)}
             <li><b class="c-ban">排除</b>：永远不会被抽到。</li>
             <li>两种设置方式：在「指定」搜索框输入中文名、拼音（如 chongyue）、首字母（如 cy）或英文名后点按钮；或点 <b>＋ 选择必出 / ＋ 选择排除</b> 打开头像面板，筛选后直接点头像。</li>
             <li>已设置的干员显示在搜索框下方，点名字即可移除，「一键清空」可全部清除。设置会保存在当前浏览器。</li>
+            <li><b>添加干员</b>：搜索结果里的 <b>添加</b> 按钮，或「＋ 添加干员」打开头像面板点选，把指定干员直接加入当前结果（排在最后，可锁定、删除、撤销）；已在结果里的再点一次会移出。</li>
           </ul>
         </section>
         <section>
@@ -360,6 +367,7 @@ footer a{color:var(--dim)}
       </div>
       <button class="mini must open" data-open="must">＋ 选择必出</button>
       <button class="mini ban open" data-open="ban">＋ 选择排除</button>
+      <button class="mini add open" data-open="add" title="把指定干员直接加入当前结果">＋ 添加干员</button>
       <button class="mini clear-all" id="clearSel" disabled title="清空所有必出和排除">一键清空</button>
     </div>
     <div class="sel-row" id="mustRow" hidden><button class="sel-lbl must" data-open="must" title="打开选择面板">必出</button><span class="sel-list" id="mustList"></span></div>
@@ -409,6 +417,7 @@ footer a{color:var(--dim)}
         <div class="m-tabs">
           <button class="m-tab must" data-mode="must">必出<span id="mMustN"></span></button>
           <button class="m-tab ban" data-mode="ban">排除<span id="mBanN"></span></button>
+          <button class="m-tab add" data-mode="add">添加到结果<span id="mAddN"></span></button>
         </div>
         <button class="m-close" id="mClose" aria-label="关闭">×</button>
       </div>
@@ -644,6 +653,32 @@ $("#lockAll").onclick = () => {
   });
   updateLockUI();
 };
+// 添加指定干员：加到当前结果最后；已在结果里就移出。每次都可撤销
+function appendCards(ops){
+  if (!current.length) grid.innerHTML = "";
+  const start = current.length;
+  ops.forEach((o, j) => {
+    const i = start + j;
+    current.push(o); locks.push(false);
+    const d = document.createElement("div");
+    d.className = cardClass(o, i); d.style.animationDelay = (j * 60) + "ms";
+    d.innerHTML = cardHTML(o, i);
+    d.onclick = () => toggleLock(i);
+    grid.appendChild(d);
+  });
+  cnt.value = current.length; clampCount();
+  $("#draw").textContent = "重 抽";
+  $("#hint").textContent = HINT;
+  updateLockUI();
+  liveSend();
+}
+function toggleInResult(id){
+  const o = OPMAP.get(id); if (!o) return;
+  const i = current.findIndex(c => c.id === id);
+  if (i >= 0) { removeCard(i); cnt.value = current.length || cnt.value; clampCount(); return; }
+  snapshot();
+  appendCards([o]);
+}
 // 再抽几个：在当前结果后面追加，已抽出的不变
 function drawMore(){
   let k = parseInt($("#moreN").value, 10); if (isNaN(k) || k < 1) k = 1; k = Math.min(99, k); $("#moreN").value = k;
@@ -832,6 +867,7 @@ function showResults(){
       <div class="rn">${o.n}<small>${o.p}·${o.s}</small><span class="st">${"★".repeat(o.r)}</span></div>
       <button class="tg must${must.has(o.id) ? " on" : ""}" data-id="${o.id}" data-k="must">必出</button>
       <button class="tg ban${ban.has(o.id) ? " on" : ""}" data-id="${o.id}" data-k="ban">排除</button>
+      <button class="tg add${current.some(c => c.id === o.id) ? " on" : ""}" data-id="${o.id}" data-k="add" title="加入当前结果（再点一次移出）">添加</button>
     </div>`).join("") : `<div class="none">没有找到「${q.value.trim().replace(/[<>&]/g, "")}」</div>`;
   results.hidden = false;
 }
@@ -839,8 +875,12 @@ q.addEventListener("input", showResults);
 q.addEventListener("focus", showResults);
 q.addEventListener("keydown", e => { if (e.key === "Escape") { q.value = ""; results.hidden = true; q.blur(); } });
 results.addEventListener("mousedown", e => e.preventDefault());
-results.addEventListener("click", e => { const b = e.target.closest(".tg"); if (b) setSel(b.dataset.id, b.dataset.k); });
-document.addEventListener("click", e => { if (!e.target.closest(".search")) results.hidden = true; });
+results.addEventListener("click", e => {
+  const b = e.target.closest(".tg"); if (!b) return;
+  if (b.dataset.k === "add") { toggleInResult(b.dataset.id); showResults(); }
+  else setSel(b.dataset.id, b.dataset.k);
+});
+document.addEventListener("click", e => { if (e.target.isConnected && !e.target.closest(".search")) results.hidden = true; });
 $("#pick").addEventListener("click", e => { const c = e.target.closest(".schip"); if (c) setSel(c.dataset.id, c.dataset.k); });
 $("#clearSel").onclick = () => { must.clear(); ban.clear(); saveSel(); refreshSel(); };
 refreshSel();
@@ -850,9 +890,11 @@ const modal = $("#modal"), mGrid = $("#mGrid");
 let mMode = "must";
 const mRon = new Set(), mOn = new Set(PROFS);
 function tileHTML(o){
-  const st = must.has(o.id) ? "is-must" : ban.has(o.id) ? "is-ban" : "";
+  const inRes = mMode === "add" && current.some(c => c.id === o.id);
+  const st = inRes ? "is-in" : must.has(o.id) ? "is-must" : ban.has(o.id) ? "is-ban" : "";
+  const badge = inRes ? "已抽出" : must.has(o.id) ? "必出" : ban.has(o.id) ? "排除" : "";
   return `<button class="tile r${o.r} ${st}" data-id="${o.id}" title="${o.n} · ${o.p}·${o.s}">
-    <img src="${IMG(o.id)}" alt="" loading="lazy"><span class="badge">${must.has(o.id) ? "必出" : ban.has(o.id) ? "排除" : ""}</span>
+    <img src="${IMG(o.id)}" alt="" loading="lazy"><span class="badge">${badge}</span>
     <span class="tn">${o.n}</span><span class="ts">${"★".repeat(o.r)}</span></button>`;
 }
 function updateTile(id){
@@ -863,10 +905,12 @@ function updateTile(id){
 }
 function mHeader(){
   document.querySelectorAll(".m-tab").forEach(b => b.classList.toggle("on", b.dataset.mode === mMode));
-  $("#mMustN").textContent = must.size || ""; $("#mBanN").textContent = ban.size || "";
+  $("#mMustN").textContent = must.size || ""; $("#mBanN").textContent = ban.size || ""; $("#mAddN").textContent = current.length || "";
   const shown = mGrid.querySelectorAll(".tile").length;
-  $("#mInfo").textContent = `点击头像加入或移出「${mMode === "must" ? "必出" : "排除"}」 · 显示 ${shown} 人`;
-  $("#mClearK").textContent = `清空${mMode === "must" ? "必出" : "排除"}`;
+  const label = { must: "必出", ban: "排除", add: "当前结果" }[mMode];
+  $("#mInfo").textContent = `点击头像加入或移出「${label}」 · 显示 ${shown} 人`;
+  $("#mClearK").hidden = mMode === "add";
+  $("#mClearK").textContent = `清空${label}`;
   document.querySelectorAll("#mRar .chip").forEach(c => c.classList.toggle("on", c.dataset.r ? mRon.has(+c.dataset.r) : mRon.size === RARS.length));
   document.querySelectorAll("#mProf .chip").forEach(c => c.classList.toggle("on", c.dataset.p ? mOn.has(c.dataset.p) : mOn.size === PROFS.length));
 }
@@ -907,8 +951,12 @@ function closePanel(){
   if (lastFocus && lastFocus.focus) lastFocus.focus();
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-open]"); if (b) openPanel(b.dataset.open); });
-document.querySelectorAll(".m-tab").forEach(b => b.onclick = () => { mMode = b.dataset.mode; mHeader(); });
-mGrid.addEventListener("click", e => { const t = e.target.closest(".tile"); if (t) setSel(t.dataset.id, mMode); });
+document.querySelectorAll(".m-tab").forEach(b => b.onclick = () => { mMode = b.dataset.mode; renderGrid(); });
+mGrid.addEventListener("click", e => {
+  const t = e.target.closest(".tile"); if (!t) return;
+  if (mMode === "add") { toggleInResult(t.dataset.id); updateTile(t.dataset.id); }
+  else setSel(t.dataset.id, mMode);
+});
 $("#mq").addEventListener("input", renderGrid);
 $("#mClose").onclick = closePanel; $("#mDone").onclick = closePanel;
 modal.addEventListener("click", e => { if (e.target === modal) closePanel(); });
