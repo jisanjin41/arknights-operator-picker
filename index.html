@@ -234,7 +234,11 @@ button,a,input,summary{-webkit-tap-highlight-color:transparent}
 .seg button.on{background:var(--accent-soft);border-color:var(--accent-text);color:var(--text);font-weight:600}
 .seg .sw{display:inline-block;width:11px;height:11px;margin-right:5px;vertical-align:-1px;border-radius:2px;border:1px solid var(--border-strong);background:var(--swc,#ff00ff)}
 #bgColor{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-#bgHex{font:11px var(--num);color:var(--text-faint);align-self:center}
+#bgHex,#stripHex{font:11px var(--num);color:var(--text-faint);align-self:center}
+#stripColor{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.alpha{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim)}
+.alpha input{flex:1;min-width:0;accent-color:var(--accent-text)}
+.alpha output{font:12px var(--num);min-width:34px;text-align:right}
 .cfg-row{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:8px}
 .cfg-row>.lbl{font-size:12px}
 .obs-box{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:var(--radius);background:var(--surface-2)}
@@ -320,7 +324,7 @@ html.live,html.live body{height:100%;overflow:hidden}
 html.live,html.live body{background:var(--lv-bg,#ffffff)}
 html.live.obs,html.live.obs body{background:transparent!important}
 #live{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
-.lv-view{position:relative;overflow:hidden;transition:opacity .2s ease}
+.lv-view{position:relative;overflow:hidden;background:var(--lv-strip,transparent);transition:opacity .2s ease}
 .lv-track{position:absolute;left:0;top:0;display:flex;gap:var(--gap);will-change:transform}
 .lv-track.v{flex-direction:column}
 .lv-track.lv-grid{flex-wrap:wrap;justify-content:center;align-content:center}
@@ -436,6 +440,8 @@ html.obs .lv-empty{display:none}
             <div class="cfg-row"><span class="lbl">方向</span><span class="seg" data-k="dir"><button data-v="h">横向</button><button data-v="v">竖向</button></span></div>
             <div class="cfg-row"><span class="lbl">形状</span><span class="seg" data-k="shape"><button data-v="circle">圆形</button><button data-v="square">方形</button></span></div>
             <div class="cfg-row"><span class="lbl">滚动</span><span class="seg" data-k="speed"><button data-v="1">慢</button><button data-v="2">中</button><button data-v="3">快</button></span></div>
+            <div class="cfg-row"><span class="lbl">底条</span><span class="seg" data-k="strip"><button data-v="none">无</button><button data-v="dark">深色</button><button data-v="light">浅色</button><button data-v="custom" title="选择任意底条颜色"><i class="sw" id="stripSwatch"></i>自定义</button><input type="color" id="stripColor" value="#000000" aria-label="自定义底条颜色"><code id="stripHex"></code></span></div>
+            <div class="cfg-row" id="stripAlphaRow"><span class="lbl">透明度</span><label class="alpha"><input type="range" id="stripAlpha" min="10" max="100" step="5" value="60" aria-label="底条不透明度"><output id="stripAlphaV">60%</output></label></div>
           </div>
 
           <div class="obs-box">
@@ -549,7 +555,7 @@ html.obs .lv-empty{display:none}
           <ul>
             <li><b>推荐 OBS 浏览器源</b>：按左侧「直播展示」里的三步连接 OBS，画面在 OBS 内显示，浏览器可以最小化，背景透明。</li>
             <li>备选<b>弹出小窗 + 窗口采集</b>：需要小窗一直可见，被遮挡时浏览器会暂停它。</li>
-            <li>方向、形状、滚动速度对两种方式都生效。</li>
+            <li>方向、形状、滚动速度、底条（头像后面的圆角色带，可选深色、浅色或自定义颜色并调透明度）对两种方式都生效。</li>
           </ul>
         </section>
         <section>
@@ -1214,7 +1220,7 @@ $("#allN").textContent = OPS.length;
 
 // ---- 直播展示：设置
 // 显示设置（方向、形状、滚动、小窗背景）保存在 ak-live-cfg，改动后立刻发给小窗和 OBS 浏览器源
-const liveCfg = { dir: "h", speed: "2", bg: "white", shape: "circle", bgc: "#ff00ff" };
+const liveCfg = { dir: "h", speed: "2", bg: "white", shape: "circle", bgc: "#ff00ff", strip: "none", stripc: "#000000", stripa: "60" };
 try { Object.assign(liveCfg, JSON.parse(localStorage.getItem("ak-live-cfg") || "{}")); } catch (e) {}
 if (liveCfg.bg === "dark") liveCfg.bg = "white"; // 旧的「深色」选项已改为「纯白」
 function liveCfgUI(){
@@ -1222,6 +1228,10 @@ function liveCfgUI(){
   syncPressed("#obsPanel .seg button");
   $("#bgSwatch").style.setProperty("--swc", liveCfg.bgc); $("#bgColor").value = liveCfg.bgc;
   $("#bgHex").textContent = liveCfg.bg === "custom" ? liveCfg.bgc.toUpperCase() : "";
+  $("#stripSwatch").style.setProperty("--swc", liveCfg.stripc); $("#stripColor").value = liveCfg.stripc;
+  $("#stripHex").textContent = liveCfg.strip === "custom" ? liveCfg.stripc.toUpperCase() : "";
+  $("#stripAlpha").value = liveCfg.stripa; $("#stripAlphaV").textContent = liveCfg.stripa + "%";
+  $("#stripAlphaRow").hidden = liveCfg.strip === "none";
 }
 function liveCfgSave(){
   try { localStorage.setItem("ak-live-cfg", JSON.stringify(liveCfg)); } catch (e) {}
@@ -1346,10 +1356,12 @@ if (!IS_LIVE) {
   $("#obsPanel").addEventListener("click", e => {
     const b = e.target.closest(".seg button"); if (!b) return;
     liveCfg[b.closest(".seg").dataset.k] = b.dataset.v; liveCfgSave();
-    if (b.dataset.v === "custom") { const c = $("#bgColor"); try { c.showPicker(); } catch (x) { c.click(); } }
+    if (b.dataset.v === "custom") { const c = b.closest(".seg").dataset.k === "strip" ? $("#stripColor") : $("#bgColor"); try { c.showPicker(); } catch (x) { c.click(); } }
   });
   // 自定义背景色：拖动取色器时小窗实时变色
   $("#bgColor").addEventListener("input", e => { liveCfg.bg = "custom"; liveCfg.bgc = e.target.value; liveCfgSave(); });
+  $("#stripColor").addEventListener("input", e => { liveCfg.strip = "custom"; liveCfg.stripc = e.target.value; liveCfgSave(); });
+  $("#stripAlpha").addEventListener("input", e => { liveCfg.stripa = e.target.value; liveCfgSave(); });
   $("#obsUrl").value = location.href.split("#")[0] + "#obs";
   $("#obsUrlCopy").onclick = async () => {
     const input = $("#obsUrl");
@@ -1389,7 +1401,7 @@ if (IS_LIVE) (function(){
   document.title = IS_OBS ? "干员抽选 · OBS 浏览器源" : "小窗展示 · 干员抽选";
   const root = $("#live"), view = $("#lvView"), track = $("#lvTrack"), empty = $("#lvEmpty");
   root.hidden = false;
-  const cfg = { dir: "h", speed: "2", bg: "white", shape: "circle" };
+  const cfg = { dir: "h", speed: "2", bg: "white", shape: "circle", strip: "none", stripc: "#000000", stripa: "60" };
   try { Object.assign(cfg, JSON.parse(localStorage.getItem("ak-live-cfg") || "{}")); } catch (e) {}
   const BG = { white: "#ffffff", green: "#00ff00", black: "#000000" };
   const SEC_PER_CARD = { "1": 4, "2": 2.4, "3": 1.3 };
@@ -1400,16 +1412,27 @@ if (IS_LIVE) (function(){
     const prevDir = cfg.dir, d = parseFloat(track.style.getPropertyValue("--d"));
     if (next) Object.assign(cfg, next);
     if (!IS_OBS) document.documentElement.style.setProperty("--lv-bg", cfg.bg === "custom" ? (cfg.bgc || "#ff00ff") : (BG[cfg.bg] || BG.white));
+    document.documentElement.style.setProperty("--lv-strip", stripColor());
     build();
     if (!IS_OBS && next && prevDir !== cfg.dir) fitWindow(d);
   }
   function cardHTML(o){
     return `<div class="lc" title="${o.n}"><img src="${IMG(o.id)}" alt="${o.n}"></div>`;
   }
+  // 底条：头像后面一条圆角色带，颜色和不透明度由主页面设置
+  function stripColor(){
+    const a = Math.min(100, Math.max(0, +cfg.stripa || 60)) / 100;
+    if (cfg.strip === "dark") return `rgba(0,0,0,${a})`;
+    if (cfg.strip === "light") return `rgba(255,255,255,${a})`;
+    if (cfg.strip === "custom" && /^#[0-9a-f]{6}$/i.test(cfg.stripc || "")) { const v = parseInt(cfg.stripc.slice(1), 16); return `rgba(${v >> 16},${(v >> 8) & 255},${v & 255},${a})`; }
+    return "transparent";
+  }
   function build(){
     const list = ids.map(id => OPMAP.get(id)).filter(Boolean);
     const n = list.length, pad = 12, g = 0.15;
-    const W = innerWidth - pad * 2, H = innerHeight - pad * 2;
+    // 有底条时在头像四周留出一圈内边距
+    const sp = cfg.strip && cfg.strip !== "none" ? Math.round(Math.min(innerWidth, innerHeight) * 0.06) + 2 : 0;
+    const W = innerWidth - pad * 2 - sp * 2, H = innerHeight - pad * 2 - sp * 2;
     empty.hidden = n > 0; view.hidden = !n;
     const horiz = cfg.dir === "h";
     track.classList.toggle("v", !horiz);
@@ -1448,7 +1471,9 @@ if (IS_LIVE) (function(){
       track.innerHTML = list.concat(list).map(cardHTML).join("");
       cycle = n * step; offset %= cycle;
     }
-    view.style.width = vw + "px"; view.style.height = vh + "px";
+    track.style.left = track.style.top = sp + "px";
+    view.style.width = vw + sp * 2 + "px"; view.style.height = vh + sp * 2 + "px";
+    view.style.borderRadius = sp ? (cfg.shape === "square" ? sp : sp + d / 2) + "px" : "";
     paint();
   }
   function paint(){
